@@ -1,4 +1,7 @@
 ﻿@page "/servers/add"
+
+@rendermode InteractiveServer
+
 @inject NavigationManager NavigationManager
 
 <h3>Add Server</h3>
@@ -63,7 +66,7 @@
         {
             ServersRepository.AddServer(server);
 
-            NavigationManager.NavigateTo("/servers");
+            NavigationManager.NavigateTo($"/servers/back_from/{this.server?.City}");
         }
 
     }

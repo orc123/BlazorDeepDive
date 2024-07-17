@@ -1,4 +1,7 @@
 ﻿@page "/servers"
+
+@rendermode InteractiveServer
+
 @inject NavigationManager NavigationManager
 
 <h3>Servers</h3>
@@ -10,25 +13,29 @@
         @foreach (var city in cities)
         {
             <div class="col">
-                <div class="card">
+                <div class="card @(selectedCity.Equals(city, StringComparison.OrdinalIgnoreCase) ? "border-primary" : "")">
                     <img src="@($"/images/{city}.png")" class="card-img-top" alt="...">
                     <div class="card-body">
-                        <button type="button" class="btn btn-primary">@city</button>
+                        <button type="button" class="btn btn-primary" @onclick="@(() => { SelectCity(city); })">@city</button>
                     </div>
                 </div>
-              
+
             </div>
         }
     </div>
 </div>
 
-<br/>
-<br/>
+<br />
+
+<div class="input-group mb-3">
+    <input type="type" class="form-control" placeholder="Search Servers" @bind-value="serverFilter" @bind-value:event="oninput" />
+    <button class="btn btn-outline-secondary" type="button" id="button-search" @onclick="HandleSearch">Search</button>
+</div>
+<br />
 
 <ul>
-    @foreach (var item in servers)
-    {
-        <li>
+    <Virtualize Items="this.servers" Context="item">
+        <li @key="item.ServerId">
             @item.Name in @item.City is <span style="color:@(item.IsOnline ? "green": "red")">@(item.IsOnline ? "online" : "offline")</span>
             &nbsp;
             <a href="/servers/@item.ServerId" class="btn btn-link">Edit</a>
@@ -36,18 +43,40 @@
             <EditForm Model="item" FormName="@($"form-server-{item.ServerId}")" OnValidSubmit="@(() => {DeleteServer(item.ServerId);})">
                 <button type="submit" class="btn btn-primary">Delete</button>
             </EditForm>
-        </li> 
-    }
+        </li>
+    </Virtualize>
 </ul>
 
 <p>
-    <a href="/servers/add" class="btn btn-primary" >Add</a>
+    <a href="/servers/add" class="btn btn-primary">Add</a>
+</p>
+
+<p>
+    <button class="btn btn-secondary"
+        @onclick="@(() => {
+            this.servers.Insert(0, new Server {Name = "ServerA", City = "Toronto"});
+        })">
+        Add Server 2
+    </button>
 </p>
 
 @code {
     private List<Server> servers = ServersRepository.GetServersByCity("Toronto");
 
     private List<String> cities = CitiesRepository.GetCities();
+
+    private string selectedCity = "Toronto";
+
+    private string _serverFilter = "";
+    private string serverFilter
+    {
+        get => _serverFilter; 
+        set
+        {
+            _serverFilter = value;
+            this.servers = ServersRepository.SearchServers(_serverFilter);
+        }
+    }
 
     private void DeleteServer(int serverId)
     {
@@ -58,4 +87,25 @@
         }
     }
 
+    private void SelectCity(string cityName)
+    {
+        this.selectedCity = cityName;
+
+        this.servers = ServersRepository.GetServersByCity(this.selectedCity);
+
+        if (cityName == "Halifax")
+        {
+            for (int i = 16; i < 2000; i++)
+            {
+                servers.Add(new Server() { ServerId = i, Name = $"Server{i}", City = "Halifax" });
+            }            
+        }
+    }
+
+    private void HandleSearch()
+    {
+        this.servers = ServersRepository.SearchServers(serverFilter);
+
+        this.selectedCity = string.Empty;
+    }
 }
