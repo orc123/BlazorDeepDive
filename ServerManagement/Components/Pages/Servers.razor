@@ -15,8 +15,13 @@
 <SearchBarComponent SearchServerCallback="HandleSearchServer" @ref="searchBarComponent"></SearchBarComponent>
 <br />
 
-<ServerListComponent @rendermode="InteractiveServer" CityName="@selectedCity" SearchFilter="@searchFilter"></ServerListComponent>
-
+<CascadingValue Name="SelectedCity" Value="@selectedCity">
+    <ServerListComponent 
+        @rendermode="InteractiveServer" 
+        CityName="@selectedCity" 
+        SearchFilter="@searchFilter">
+    </ServerListComponent>
+</CascadingValue>
 <p>
     <a href="/servers/add" class="btn btn-primary">Add</a>
 </p>
