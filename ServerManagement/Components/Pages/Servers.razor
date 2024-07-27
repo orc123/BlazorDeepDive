@@ -1,4 +1,5 @@
 ﻿@page "/servers"
+@page "/servers/back_from/{cityName}"
 
 @rendermode InteractiveServer
 
@@ -8,7 +9,7 @@
 
 <br />
 <br />
-<CityListComponent @ref="cityListComponent" SelectCityCallback="HandCitySelection"></CityListComponent>
+<CityListComponent @ref="cityListComponent" SelectCityCallback="HandCitySelection" selectedCity="@selectedCity"></CityListComponent>
 
 <br />
 
@@ -27,12 +28,16 @@
     </ServerListComponent>
 </CascadingValue>
 <p>
-    <a href="/servers/add" class="btn btn-primary">Add</a>
+    <a href="/server/" class="btn btn-primary">Add</a>
 </p>
 
 
 @code {
-    private string selectedCity = "Toronto";
+
+    [Parameter]
+    public string? CityName { get; set; }
+
+    private string selectedCity { get; set; } = "Toronto";
     private string searchFilter = "";
     private CityListComponent? cityListComponent;
     private SearchBarComponent? searchBarComponent;
@@ -57,5 +62,17 @@
         this.searchFilter = searchFilter;
 
         cityListComponent?.ClearSelection();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (NavigationManager.Uri.Contains("back_from") && !string.IsNullOrWhiteSpace(CityName))
+            {
+                selectedCity = CityName;
+                StateHasChanged();
+            }
+        }
     }
 }
